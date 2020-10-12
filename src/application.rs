@@ -164,7 +164,7 @@ pub fn draw_background() {
 
     update_dpad();
 
-    app.platform.offscreen_buffer.clear(app.palette[3]);
+    app.platform.offscreen_buffer.clear(app.palette[4]);
     for key in app.keys.iter() {
         draw!(&app.keyset, key.x, key.y, key.idx);
     }
@@ -204,7 +204,15 @@ pub fn change_palette(index: usize) {
         return;
     }
 
-    app.palette = app.palettes[index].1.clone();
+    let mut new_palette = app.palettes[index].1.clone();
+
+    // 2 palette entries are inserted:
+    //   The first one is reserved for the future
+    //   The second one is the background color + 1 green for chromakey purposes
+    new_palette.insert(3, [0, 0, 0]);
+    new_palette.insert(4, [new_palette[4][0], new_palette[4][1] + 1, new_palette[4][2]]);
+
+    app.palette = new_palette;
     app.palette_index = index;
     draw_background();
 }

@@ -44,7 +44,7 @@ impl Index<usize> for Bitmap {
 }
 
 const BMP_SIGNATURE: u16 = 0x424d;
-const BPP: u8 = 4;
+const NUM_COLORS: u8 = 5;
 
 pub fn bmp_load(data: &[u8]) -> Result<Bitmap, BMPError> {
     let mut pointer = Cursor::new(data);
@@ -75,7 +75,7 @@ pub fn bmp_load(data: &[u8]) -> Result<Bitmap, BMPError> {
     for y in 0..header.height {
         for x in 0..header.width {
             pointer.read(&mut px)?;
-            data[(x + (header.height - y - 1) * header.width) as usize] = px[0] / (BPP << 4);
+            data[(x + (header.height - y - 1) * header.width) as usize] = px[0] / (255 / NUM_COLORS);
         }
     }
 
