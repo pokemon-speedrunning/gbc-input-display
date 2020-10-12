@@ -158,7 +158,8 @@ pub fn sync_gambatte_keybindings() -> Result<()> {
 
     let subkey = app.platform.reg_open_subkey(HKEY_CURRENT_USER, "SOFTWARE\\gambatte\\gambatte_qt\\input", KEY_QUERY_VALUE)?;
     for key in app.keys.iter_mut() {
-        key.ipt = qt_translate!(app.platform.reg_read_u32(subkey, &key.reg_entry)?);
+        key.primary_ipt = qt_translate!(app.platform.reg_read_u32(subkey, &format!("{}{}", &key.reg_entry, "1"))?);
+        key.secondary_ipt = qt_translate!(app.platform.reg_read_u32(subkey, &format!("{}{}", &key.reg_entry, "2"))?);
     }
     app.platform.reg_close_subkey(subkey)?;
 

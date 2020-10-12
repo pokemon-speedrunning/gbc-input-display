@@ -3,7 +3,8 @@ pub const KEY_CONTRACTED_BIT: i32 = 32;
 pub const KEY_ELONGATED_BIT: i32 = 64;
 
 pub struct Key {
-    pub ipt: u32,
+    pub primary_ipt: u32,
+    pub secondary_ipt: u32,
     pub x: f32,
     pub y: f32,
     pub idx: i32,

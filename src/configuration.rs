@@ -4,7 +4,7 @@ use crate::winapi::*;
 
 pub fn configure_current_key(key_code: u32) {
     let app = unsafe { &mut *APP_POINTER };
-    app.keys[app.key_to_configure as usize].ipt = key_code;
+    app.keys[app.key_to_configure as usize].primary_ipt = key_code;
     configure_next_key();
 }
 
@@ -38,7 +38,8 @@ pub fn load_configuration() -> std::io::Result<()> {
 
     let subkey = app.platform.reg_create_subkey(HKEY_CURRENT_USER, "SOFTWARE\\inputdisplay", KEY_QUERY_VALUE)?;
     for key in app.keys.iter_mut() {
-        key.ipt = app.platform.reg_read_u32(subkey, &key.reg_entry)?;
+        key.primary_ipt = app.platform.reg_read_u32(subkey, &format!("{}{}", key.reg_entry, "1"))?;
+        key.secondary_ipt = app.platform.reg_read_u32(subkey, &format!("{}{}", key.reg_entry, "2"))?;
     }
 
     change_palette(app.platform.reg_read_u32(subkey, PALETTE_ENTRY)? as usize);
@@ -56,7 +57,8 @@ pub fn save_configuration() -> std::io::Result<()> {
 
     let subkey = app.platform.reg_create_subkey(HKEY_CURRENT_USER, "SOFTWARE\\inputdisplay", KEY_SET_VALUE)?;
     for key in app.keys.iter() {
-        app.platform.reg_write_u32(subkey, &key.reg_entry, key.ipt)?;
+        app.platform.reg_write_u32(subkey, &format!("{}{}", key.reg_entry, "1"), key.primary_ipt)?;
+        app.platform.reg_write_u32(subkey, &format!("{}{}", key.reg_entry, "2"), key.secondary_ipt)?;
     }
     app.platform.reg_write_u32(subkey, PALETTE_ENTRY, app.palette_index as u32)?;
     app.platform.reg_write_u32(subkey, SYNC_ENTRY, app.gambatte_sync as u32)?;

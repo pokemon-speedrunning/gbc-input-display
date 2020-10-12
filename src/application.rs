@@ -65,15 +65,15 @@ pub fn start() {
         palette: Vec::new(),
         palette_index: 0,
         keys: vec![
-            Key { ipt: 0, name: String::from("UP"), reg_entry: String::from("GameUpKey1"), x: 2.0, y: 2.0, idx: 5 },
-            Key { ipt: 0, name: String::from("DOWN"), reg_entry: String::from("GameDownKey1"), x: 2.0, y: 4.0, idx: 6 },
-            Key { ipt: 0, name: String::from("LEFT"), reg_entry: String::from("GameLeftKey1"), x: 1.0, y: 3.0, idx: 7 },
-            Key { ipt: 0, name: String::from("RIGHT"), reg_entry: String::from("GameRightKey1"), x: 3.0, y: 3.0, idx: 8 },
-            Key { ipt: 0, name: String::from("SELECT"), reg_entry: String::from("GameSelectKey1"), x: 3.5, y: 6.0, idx: 2 },
-            Key { ipt: 0, name: String::from("START"), reg_entry: String::from("GameStartKey1"), x: 4.5, y: 6.0, idx: 3 },
-            Key { ipt: 0, name: String::from("B"), reg_entry: String::from("GameBKey1"), x: 5.5, y: 4.0, idx: 1 },
-            Key { ipt: 0, name: String::from("A"), reg_entry: String::from("GameAKey1"), x: 7.0, y: 3.0, idx: 0 },
-            Key { ipt: 0, name: String::from("POWER"), reg_entry: String::from("PlayHard resetKey1"), x: 7.0, y: 1.0 - (6.0 / KEY_SIZE as f32), idx: 4 },
+            Key { primary_ipt: 0, secondary_ipt: 0, name: String::from("UP"), reg_entry: String::from("GameUpKey"), x: 2.0, y: 2.0, idx: 5 },
+            Key { primary_ipt: 0, secondary_ipt: 0, name: String::from("DOWN"), reg_entry: String::from("GameDownKey"), x: 2.0, y: 4.0, idx: 6 },
+            Key { primary_ipt: 0, secondary_ipt: 0, name: String::from("LEFT"), reg_entry: String::from("GameLeftKey"), x: 1.0, y: 3.0, idx: 7 },
+            Key { primary_ipt: 0, secondary_ipt: 0, name: String::from("RIGHT"), reg_entry: String::from("GameRightKey"), x: 3.0, y: 3.0, idx: 8 },
+            Key { primary_ipt: 0, secondary_ipt: 0, name: String::from("SELECT"), reg_entry: String::from("GameSelectKey"), x: 3.5, y: 6.0, idx: 2 },
+            Key { primary_ipt: 0, secondary_ipt: 0, name: String::from("START"), reg_entry: String::from("GameStartKey"), x: 4.5, y: 6.0, idx: 3 },
+            Key { primary_ipt: 0, secondary_ipt: 0, name: String::from("B"), reg_entry: String::from("GameBKey"), x: 5.5, y: 4.0, idx: 1 },
+            Key { primary_ipt: 0, secondary_ipt: 0, name: String::from("A"), reg_entry: String::from("GameAKey"), x: 7.0, y: 3.0, idx: 0 },
+            Key { primary_ipt: 0, secondary_ipt: 0, name: String::from("POWER"), reg_entry: String::from("PlayHard resetKey"), x: 7.0, y: 1.0 - (6.0 / KEY_SIZE as f32), idx: 4 },
         ],
         dpad: vec![
             // TODO: Is there a better way to construct overhangs?
@@ -125,32 +125,25 @@ fn on_rightclick(_wparam: usize, _lparam: usize) {
         ],
         &mut item_counter,
     ) as usize;
-    match res {
-        // TODO: These should not be constants, in case more palettes get added
-        13 => {
-            let result_text = match sync_gambatte_keybindings() {
-                Ok(_) => "SUCCESS",
-                Err(_) => "FAILURE",
-            };
 
-            thread::spawn(move || {
-                app.text_buffer = String::from(result_text);
-                draw_background();
-                app.text_buffer = String::from("");
-                thread::sleep(Duration::from_secs(3));
-                draw_background();
-            });
-        }
-        14 => {
-            configure_next_key();
-        }
-        // TODO: Uhhh, is this the correct way to accomplish this
-        x => {
-            if res > 0 && res <= palette_menu.len() {
-                change_palette(x as usize - 1)
-            }
-        }
-    };
+    if res == palette_menu.len() + 1 {
+        let result_text = match sync_gambatte_keybindings() {
+            Ok(_) => "SUCCESS",
+            Err(_) => "FAILURE",
+        };
+        thread::spawn(move || {
+            app.text_buffer = String::from(result_text);
+            draw_background();
+            app.text_buffer = String::from("");
+            thread::sleep(Duration::from_secs(3));
+            draw_background();
+        });
+    } else if res == palette_menu.len() + 2 {
+        configure_next_key();
+    } else if res > 0 && res <= palette_menu.len() {
+        change_palette(res as usize - 1)
+    }
+
     save_configuration().ok();
 }
 
@@ -218,7 +211,7 @@ unsafe extern "system" fn on_key_state(code: i32, wparam: usize, lparam: usize) 
     let key_state = app.platform.key_state_from_wparam(wparam);
 
     if app.key_to_configure == -1 {
-        let mut key = app.keys.iter_mut().find(|key| key.ipt == key_code);
+        let mut key = app.keys.iter_mut().find(|key| key.primary_ipt == key_code || key.secondary_ipt == key_code);
 
         if let None = key {
             if (app.platform.is_key_down(VK_CONTROL) && key_code as u32 == 'R' as u32) || (app.platform.is_key_down('R' as u32) && key_code == VK_CONTROL) {
