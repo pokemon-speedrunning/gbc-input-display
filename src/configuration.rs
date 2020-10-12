@@ -5,6 +5,7 @@ use crate::winapi::*;
 pub fn configure_current_key(key_code: u32) {
     let app = unsafe { &mut *APP_POINTER };
     app.keys[app.key_to_configure as usize].primary_ipt = key_code;
+    app.keys[app.key_to_configure as usize].secondary_ipt = 0;
     configure_next_key();
 }
 

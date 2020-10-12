@@ -200,6 +200,10 @@ pub fn draw_background() {
 
 pub fn change_palette(index: usize) {
     let app = unsafe { &mut *APP_POINTER };
+    if index >= app.palettes.len() {
+        return;
+    }
+
     app.palette = app.palettes[index].1.clone();
     app.palette_index = index;
     draw_background();
