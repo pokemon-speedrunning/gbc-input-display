@@ -10,9 +10,6 @@ macro_rules! qt_translate {
             0x01000001 => 0x09,
             0x0100000b => 0x0C,
             0x01000004 => 0x0D,
-            0x01000020 => 0x10,
-            0x01000021 => 0x11,
-            0x01000023 => 0x12,
             0x01000008 => 0x13,
             0x01000024 => 0x14,
             0x01000000 => 0x1B,
@@ -152,6 +149,9 @@ macro_rules! qt_translate {
             0x5b => 219,
             0x5d => 221,
             0x2d => 189,
+            0x01000020 => 160,
+            0x01000021 => 162,
+            0x01000023 => 164,
             _ => 0x00,
         };
     };
@@ -163,7 +163,11 @@ pub fn sync_gambatte_keybindings() -> Result<()> {
     let subkey = app.platform.reg_open_subkey(HKEY_CURRENT_USER, "SOFTWARE\\gambatte\\gambatte_qt\\input", KEY_QUERY_VALUE)?;
     for key in app.keys.iter_mut() {
         key.primary_ipt = qt_translate!(app.platform.reg_read_u32(subkey, &format!("{}{}", &key.reg_entry, "1"))?);
-        key.secondary_ipt = qt_translate!(app.platform.reg_read_u32(subkey, &format!("{}{}", &key.reg_entry, "2"))?);
+        if key.primary_ipt == 160 {
+            key.secondary_ipt = 161
+        } else {
+            key.secondary_ipt = qt_translate!(app.platform.reg_read_u32(subkey, &format!("{}{}", &key.reg_entry, "2"))?);
+        }
     }
     app.platform.reg_close_subkey(subkey)?;
 
